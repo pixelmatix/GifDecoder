@@ -242,8 +242,8 @@ void setup() {
 
 void loop() {
     static unsigned long displayStartTime_millis;
+    static unsigned long cycleStartTime_millis;
     static int nextGIF = 1;     // we haven't loaded a GIF yet on first pass through, make sure we do that
-    static unsigned long lastDecodeTime_millis;
 
     unsigned long now = millis();
 
@@ -265,6 +265,7 @@ void loop() {
 
     if(nextGIF)
     {
+        cycleStartTime_millis = now;
         nextGIF = 0;
         if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
             // Can clear screen for new animation here, but this might cause flicker with short animations
@@ -285,11 +286,27 @@ void loop() {
         if (++index >= num_files) {
             index = 0;
         }
-
     }
 
-    if(decoder.decodeFrame() < 0) {
+    int returnCode = decoder.decodeFrame();
+
+    if(returnCode < 0) {
         // There's an error with this GIF, go to the next one
         nextGIF = 1;
+    }
+
+    // we completed one pass of the GIF, print some stats
+    if(returnCode == ERROR_DONE_PARSING) {
+        // Print the stats for this GIF      
+        char buf[80];
+        int32_t frames       = decoder.getFrameCount();
+        int32_t cycle_design = decoder.getCycleTime();  // Intended duration
+        int32_t cycle_actual = now - cycleStartTime_millis;       // Actual duration
+        int32_t percent = 100 * cycle_design / cycle_actual;
+        sprintf(buf, "[%ld frames = %ldms] actual: %ldms speed: %ld%%",
+                frames, cycle_design, cycle_actual, percent);
+        Serial.println(buf);
+
+        cycleStartTime_millis = now;
     }
 }
