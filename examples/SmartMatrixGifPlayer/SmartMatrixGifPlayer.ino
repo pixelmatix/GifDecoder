@@ -114,9 +114,7 @@ SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight
 
 /* template parameters are maxGifWidth, maxGifHeight, lzwMaxBits
  * 
- * The lzwMaxBits value of 12 supports all GIFs, but uses 16kB RAM
- * lzwMaxBits can be set to 10 or 11 for smaller displays to save RAM, but use 12 for large displays
- * All 32x32-pixel GIFs tested so far work with 11, most work with 10
+ * lzwMaxBits is included for backwards compatibility reasons, but isn't used anymore
  */
 GifDecoder<kMatrixWidth, kMatrixHeight, 12> decoder;
 
