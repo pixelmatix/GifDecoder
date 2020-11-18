@@ -2,9 +2,9 @@ GifDecoder - AnimatedGIF Decoder Library
 ========================================
 This library decodes Animated GIF frames from a Filesystem, and draws them to a display.  The Filesystem and Display specific functions have been abstracted out using callback functions contained in the sketch, so this library should be useful on many different platforms.  This library depends on the [AnimatedGIF Library](https://github.com/bitbank2/AnimatedGIF).
 
-As of release 0.0.2 (November 2020), the GifDecoder Library has been rewritten and simplified to use the external [AnimatedGIF Library](https://github.com/bitbank2/AnimatedGIF) to do the decoding.  The AnimatedGIF Library is written to be very efficient, but doesn't have the easiest API to work with.  GifDecoder Library acts as a wrapper to provide an easier interface, familiar with anyone using the Pixelmatix AnimatedGIFs sketch or earlier versions of the GifDecoder Library.
+As of release 0.0.2 (November 2020), the GifDecoder Library has been rewritten and simplified to use the external [AnimatedGIF Library](https://github.com/bitbank2/AnimatedGIF) to do the decoding.  The AnimatedGIF Library is written to be very efficient, but but is also minimal and requires some complicated code in the Arduino sketch to run.  GifDecoder Library acts as a wrapper to provide an easier interface, familiar with anyone using the Pixelmatix AnimatedGIFs sketch or earlier versions of the GifDecoder Library, and adding some extra functionality to track stats on GIF playback.
 
-Note one API change for previous users of the AnimatedGIFs sketch or earlier versions of the GifDecoder Library: A callback function that returns the current file size is required, use `setFileSizeCallback()`
+There's one important API change for previous users of the AnimatedGIFs sketch or earlier versions of the GifDecoder Library: A callback function that returns the current file size is required, use `setFileSizeCallback()`.  See the examples for a reference.
 
 The AnimatedGIF Library can't decode all GIF types.  Follow the updated example code that checks for errors when calling `startDecoding()` and `decodeFrame()` to find GIFs that aren't compatible.  In particular, GIFs using interleaved frames aren't supported.
 
