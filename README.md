@@ -6,6 +6,8 @@ As of release 0.0.2 (November 2020), the GifDecoder Library has been rewritten a
 
 Note one API change for previous users of the AnimatedGIFs sketch or earlier versions of the GifDecoder Library: A callback function that returns the current file size is required, use `setFileSizeCallback()`
 
+The AnimatedGIF Library can't decode all GIF types.  Follow the updated example code that checks for errors when calling `startDecoding()` and `decodeFrame()` to find GIFs that aren't compatible.  In particular, GIFs using interleaved frames aren't supported.
+
 A [SmartMatrix Library](http://docs.pixelmatix.com/SmartMatrix/index.html) example is included, reading from a SD card.  This works on both the Teensy and ESP32 platforms.
 
 For ESP32/ESP8266 SPIFFS, try adapting the SmartMatrix example, using the FilenameFunctions code in this repository: https://github.com/prenticedavid/AnimatedGIFs_SD
