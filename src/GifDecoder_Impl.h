@@ -360,7 +360,7 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::decodeFrame(bool delayAft
 
   frameNumber++;
   // only track cycleTime on first frame
-  if(!frameNumber)
+  if(!cycleNumber)
     cycleTime += frameDelay_ms;
 
   // if done parsing
