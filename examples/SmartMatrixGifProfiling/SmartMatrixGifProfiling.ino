@@ -166,6 +166,9 @@ void setup() {
     decoder.setFileReadCallback(fileReadCallback);
     decoder.setFileReadBlockCallback(fileReadBlockCallback);
 
+    // NOTE: new callback function required after we moved to using the external AnimatedGIF library to decode GIFs
+    decoder.setFileSizeCallback(fileSizeCallback);
+
 #if (START_WITH_RANDOM_GIF == 1)
     // Seed the random number generator
     randomSeed(analogRead(14));
@@ -252,22 +255,27 @@ void loop() {
 
 #if 1
     // default behavior is to play the gif for DISPLAY_TIME_SECONDS or for NUMBER_FULL_CYCLES, whichever comes first
-    if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) || decoder.getCycleNo() > NUMBER_FULL_CYCLES)
+    if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) || decoder.getCycleNumber() > NUMBER_FULL_CYCLES)
         nextGIF = 1;
 #else
     // alt behavior is to play the gif until both DISPLAY_TIME_SECONDS and NUMBER_FULL_CYCLES have passed
-    if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) && decoder.getCycleNo() > NUMBER_FULL_CYCLES)
+    if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) && decoder.getCycleNumber() > NUMBER_FULL_CYCLES)
         nextGIF = 1;
 #endif
 
     if(nextGIF)
     {
+        nextGIF = 0;
         if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
             // Can clear screen for new animation here, but this might cause flicker with short animations
             // matrix.fillScreen(COLOR_BLACK);
             // matrix.swapBuffers();
 
-            decoder.startDecoding();
+            // start decoding, skipping to the next GIF if there's an error
+            if(decoder.startDecoding() < 0) {
+                nextGIF = 1;
+                return;
+            }
 
             // Calculate time in the future to terminate animation
             displayStartTime_millis = now;
@@ -278,8 +286,10 @@ void loop() {
             index = 0;
         }
 
-        nextGIF = 0;
     }
 
-    decoder.decodeFrame();
+    if(decoder.decodeFrame() < 0) {
+        // There's an error with this GIF, go to the next one
+        nextGIF = 1;
+    }
 }
