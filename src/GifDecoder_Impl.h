@@ -33,21 +33,6 @@
 
 #include "GifDecoder.h"
 
-// Error codes
-#define ERROR_NONE                      0
-#define ERROR_DONE_PARSING              1
-#define ERROR_WAITING                   2
-#define ERROR_FILEOPEN                  -1
-#define ERROR_FILENOTGIF                -2
-#define ERROR_BADGIFFORMAT              -3
-#define ERROR_UNKNOWNCONTROLEXT         -4
-#define ERROR_GIF_TOO_WIDE              -5
-#define ERROR_GIF_INVALID_PARAMETER     -6
-#define ERROR_GIF_UNSUPPORTED_FEATURE   -7
-#define ERROR_GIF_EARLY_EOF             -8
-#define ERROR_GIF_EMPTY_FRAME           -9
-#define ERROR_GIF_DECODE_ERROR          -10
-
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
 callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::screenClearCallback;
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
@@ -275,6 +260,19 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDecoding(void) {
     gif.begin(BIG_ENDIAN_PIXELS, GIF_PALETTE_RGB888);
   }
 
+  // check for callbacks working first
+  if(!screenClearCallback ||
+      !updateScreenCallback ||
+      !drawPixelCallback ||
+      !fileSeekCallback ||
+      !filePositionCallback ||
+      !fileReadCallback ||
+      !fileReadBlockCallback ||
+      !fileSizeCallback) {
+    Serial.println("Error: missing a callback function");
+    return ERROR_MISSING_CALLBACK_FUNCTION;
+  }
+
   cycleNumber = 0;
   cycleTime = 0;
   frameStartTime = micros();
@@ -334,6 +332,19 @@ template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
 int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::decodeFrame(bool delayAfterDecode) {
   // Parse gif data
   int frameStatus;
+
+  // check for callbacks working first - this is inefficient, but it may helpful temporarily with the API change
+  if(!screenClearCallback ||
+      !updateScreenCallback ||
+      !drawPixelCallback ||
+      !fileSeekCallback ||
+      !filePositionCallback ||
+      !fileReadCallback ||
+      !fileReadBlockCallback ||
+      !fileSizeCallback) {
+    Serial.println("Error: missing a callback function");
+    return ERROR_MISSING_CALLBACK_FUNCTION;
+  }
 
   frameStatus = gif.playFrame(delayAfterDecode, &frameDelay_ms);
 

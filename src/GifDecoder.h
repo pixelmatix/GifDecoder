@@ -7,6 +7,22 @@
 #define DISPLAY_WIDTH maxGifWidth
 #define DISPLAY_HEIGHT maxGifHeight
 
+// Error codes
+#define ERROR_NONE                      0
+#define ERROR_DONE_PARSING              1
+#define ERROR_WAITING                   2
+#define ERROR_FILEOPEN                  -1
+#define ERROR_FILENOTGIF                -2
+#define ERROR_BADGIFFORMAT              -3
+#define ERROR_UNKNOWNCONTROLEXT         -4
+#define ERROR_GIF_TOO_WIDE              -5
+#define ERROR_GIF_INVALID_PARAMETER     -6
+#define ERROR_GIF_UNSUPPORTED_FEATURE   -7
+#define ERROR_GIF_EARLY_EOF             -8
+#define ERROR_GIF_EMPTY_FRAME           -9
+#define ERROR_GIF_DECODE_ERROR          -10
+#define ERROR_MISSING_CALLBACK_FUNCTION -11
+
 typedef void (*callback)(void);
 typedef void (*pixel_callback)(int16_t x, int16_t y, uint8_t red, uint8_t green,
                                uint8_t blue);
@@ -43,8 +59,8 @@ public:
   void setScreenClearCallback(callback f);
   void setUpdateScreenCallback(callback f);
   void setDrawPixelCallback(pixel_callback f);
-  void setDrawLineCallback(line_callback f);
-  void setStartDrawingCallback(callback f); // note this is not called when NO_IMAGEDATA == 2, and has not been tested recently
+  void setDrawLineCallback(line_callback f); // note this callback is not currently used, but may be used in the future
+  void setStartDrawingCallback(callback f); // note this callback is not currently used
 
   void setFileSeekCallback(file_seek_callback f);
   void setFilePositionCallback(file_position_callback f);

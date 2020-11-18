@@ -166,6 +166,8 @@ void setup() {
     decoder.setFilePositionCallback(filePositionCallback);
     decoder.setFileReadCallback(fileReadCallback);
     decoder.setFileReadBlockCallback(fileReadBlockCallback);
+    
+    // NOTE: new callback function required after we moved to using the external AnimatedGIF library to decode GIFs
     decoder.setFileSizeCallback(fileSizeCallback);
 
 #if (START_WITH_RANDOM_GIF == 1)
@@ -263,12 +265,18 @@ void loop() {
 
     if(nextGIF)
     {
+        nextGIF = 0;
+
         if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
             // Can clear screen for new animation here, but this might cause flicker with short animations
             // matrix.fillScreen(COLOR_BLACK);
             // matrix.swapBuffers();
 
-            decoder.startDecoding();
+            // start decoding, skipping to the next GIF if there's an error
+            if(decoder.startDecoding() < 0) {
+                nextGIF = 1;
+                return;
+            }
 
             // Calculate time in the future to terminate animation
             displayStartTime_millis = now;
@@ -279,7 +287,6 @@ void loop() {
             index = 0;
         }
 
-        nextGIF = 0;
     }
 
     if(decoder.decodeFrame() < 0) {
