@@ -75,7 +75,6 @@
 #include "homer_tiny.h"
 
 //#include <SmartLEDShieldV4.h>  // comment out this line for if you're not using SmartLED Shield V4 hardware (this line needs to be before #include <SmartMatrix3.h>)
-#include <MatrixHardware_Teensy4_ShieldV5.h>        // SmartLED Shield for Teensy 4 (V5)
 #include <SmartMatrix3.h>
 
 #include <GifDecoder.h>
