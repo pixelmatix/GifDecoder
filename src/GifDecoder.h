@@ -45,6 +45,7 @@ typedef struct rgb_24 {
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits> class GifDecoder {
 public:
   int startDecoding(void);
+  int startDecoding(uint8_t *pData, int iDataSize);
   int decodeFrame(bool delayAfterDecode = true);
   int getCycleTime(void) { return cycleTime; }  // only valid when cycleNumber > 0, ideal number of ms to play one cycle of GIF
   int getFrameNumber(void) { return frameNumber; } // only valid when cycleNumber > 0, number of frames in one cycle of GIF
@@ -72,6 +73,10 @@ private:
   AnimatedGIF gif;
 
   bool beginCalled;
+  bool usingFileCallbacks = true;
+
+  uint8_t *gifPData;
+  int gifIDataSize;
 
   int cycleNumber;
   int cycleTime;

@@ -253,6 +253,7 @@ int32_t GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::GIFSeekFile(GIFFILE *
 
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
 int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDecoding(void) {
+  usingFileCallbacks = true;
   if(!beginCalled) {
     beginCalled = true;
 
@@ -261,14 +262,9 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDecoding(void) {
   }
 
   // check for callbacks working first
-  if(!screenClearCallback ||
-      !updateScreenCallback ||
-      !drawPixelCallback ||
-      !fileSeekCallback ||
-      !filePositionCallback ||
-      !fileReadCallback ||
-      !fileReadBlockCallback ||
-      !fileSizeCallback) {
+  if((!screenClearCallback || !updateScreenCallback || !drawPixelCallback) ||
+    (usingFileCallbacks && (!fileSeekCallback || !filePositionCallback ||
+      !fileReadCallback || !fileReadBlockCallback || !fileSizeCallback))) {
     Serial.println("Error: missing a callback function");
     return ERROR_MISSING_CALLBACK_FUNCTION;
   }
@@ -281,6 +277,56 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDecoding(void) {
 
   // file is already open, and we don't know the name, send a 0-length string instead
   if (gif.open("", GIFOpenFile, GIFCloseFile, GIFReadFile, GIFSeekFile, GIFDraw))
+  {
+    Serial.printf("Successfully opened GIF; Canvas size = %d x %d\n", gif.getCanvasWidth(), gif.getCanvasHeight());
+#if 0
+    GIFINFO gi;
+    if (gif.getInfo(&gi)) {
+      Serial.printf("frame count: %d\n", gi.iFrameCount);
+      Serial.printf("duration: %d ms\n", gi.iDuration);
+      Serial.printf("max delay: %d ms\n", gi.iMaxDelay);
+      Serial.printf("min delay: %d ms\n", gi.iMinDelay);
+    }
+#endif
+    Serial.flush();
+  } else {
+    Serial.print("open failed: ");
+    Serial.println(gif.getLastError());
+    return translateGifErrorCode(gif.getLastError());    
+  }
+
+  return ERROR_NONE;
+}
+
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
+int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDecoding(uint8_t *pData, int iDataSize) {
+  usingFileCallbacks = false;
+
+  // we need these again to open the file next cycle
+  gifPData = pData;
+  gifIDataSize = iDataSize;
+
+  if(!beginCalled) {
+    beginCalled = true;
+
+    // using RGB888 = rgb24 palette instead of default RGB565
+    gif.begin(BIG_ENDIAN_PIXELS, GIF_PALETTE_RGB888);
+  }
+
+  // check for callbacks working first
+  if(!screenClearCallback || !updateScreenCallback || !drawPixelCallback) {
+    Serial.println("Error: missing a callback function");
+    return ERROR_MISSING_CALLBACK_FUNCTION;
+  }
+
+  cycleNumber = 0;
+  cycleTime = 0;
+  frameStartTime = micros();
+
+  screenClearCallback();
+
+  // file is already open, and we don't know the name, send a 0-length string instead
+  if (gif.open(gifPData, gifIDataSize, GIFDraw))
   {
     Serial.printf("Successfully opened GIF; Canvas size = %d x %d\n", gif.getCanvasWidth(), gif.getCanvasHeight());
 #if 0
@@ -334,14 +380,9 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::decodeFrame(bool delayAft
   int frameStatus;
 
   // check for callbacks working first - this is inefficient, but it may helpful temporarily with the API change
-  if(!screenClearCallback ||
-      !updateScreenCallback ||
-      !drawPixelCallback ||
-      !fileSeekCallback ||
-      !filePositionCallback ||
-      !fileReadCallback ||
-      !fileReadBlockCallback ||
-      !fileSizeCallback) {
+  if((!screenClearCallback || !updateScreenCallback || !drawPixelCallback) ||
+    (usingFileCallbacks && (!fileSeekCallback || !filePositionCallback ||
+      !fileReadCallback || !fileReadBlockCallback || !fileSizeCallback))) {
     Serial.println("Error: missing a callback function");
     return ERROR_MISSING_CALLBACK_FUNCTION;
   }
@@ -370,10 +411,14 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::decodeFrame(bool delayAft
     cycleNumber++;
     frameStartTime = micros();
 
-    fileSeekCallback(0);
+    if(usingFileCallbacks) {
+      fileSeekCallback(0);
 
-    // file is already open, and we don't know the name, send a 0-length string instead
-    gif.open("", GIFOpenFile, GIFCloseFile, GIFReadFile, GIFSeekFile, GIFDraw);
+      // file is already open, and we don't know the name, send a 0-length string instead
+      gif.open("", GIFOpenFile, GIFCloseFile, GIFReadFile, GIFSeekFile, GIFDraw);
+    } else {
+      gif.open(gifPData, gifIDataSize, GIFDraw);
+    }
 
     return ERROR_DONE_PARSING;
   }
