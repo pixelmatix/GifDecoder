@@ -208,7 +208,7 @@ void setup() {
 
     // Clear screen
     backgroundLayer.fillScreen(COLOR_BLACK);
-    backgroundLayer.swapBuffers(false);
+    backgroundLayer.swapBuffers();
 #endif
 
     if(initFileSystem(SD_CS) < 0) {
