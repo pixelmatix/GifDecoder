@@ -152,6 +152,10 @@ void setup() {
     decoder.setDrawPixelCallback(drawPixelCallback);
 
     Serial.begin(115200);
+
+    // give time for USB Serial to be ready
+    delay(1000);
+
     Serial.println("Starting AnimatedGIFs Sketch");
 
 #if (USE_SMARTMATRIX == 1)

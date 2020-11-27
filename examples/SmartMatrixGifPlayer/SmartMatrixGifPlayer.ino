@@ -175,6 +175,10 @@ void setup() {
     decoder.setFileSizeCallback(fileSizeCallback);
 
     Serial.begin(115200);
+
+    // give time for USB Serial to be ready
+    delay(1000);
+
     Serial.println("Starting AnimatedGIFs Sketch");
 
 
