@@ -245,51 +245,61 @@ void setup() {
 
 
 void loop() {
+    // these variables keep track of when it's time to play a new GIF
     static unsigned long displayStartTime_millis;
-    static int nextGIF = 1;     // we haven't loaded a GIF yet on first pass through, make sure we do that
+    static bool playNextGif = true;     // we haven't loaded a GIF yet on first pass through, make sure we do that
 
-    unsigned long now = millis();
+    // these variables keep track of when we're done displaying the last frame and are ready for a new frame
+    static uint32_t lastFrameDisplayTime = 0;
+    static unsigned int currentFrameDelay = 0;
 
     static int index = 0;
+
+    unsigned long now = millis();
 
 #if 1
     // default behavior is to play the gif for DISPLAY_TIME_SECONDS or for NUMBER_FULL_CYCLES, whichever comes first
     if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) || decoder.getCycleNumber() > NUMBER_FULL_CYCLES)
-        nextGIF = 1;
+        playNextGif = true;
 #else
     // alt behavior is to play the gif until both DISPLAY_TIME_SECONDS and NUMBER_FULL_CYCLES have passed
     if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) && decoder.getCycleNumber() > NUMBER_FULL_CYCLES)
-        nextGIF = 1;
+        playNextGif = true;
 #endif
 
-    if(nextGIF)
-    {
-        nextGIF = 0;
+    // We only decode a GIF frame if the previous frame delay is over
+    if((millis() - lastFrameDisplayTime) > currentFrameDelay) {
+        if(playNextGif)
+        {
+            playNextGif = false;
 
-        if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
-            // Can clear screen for new animation here, but this might cause flicker with short animations
-            // matrix.fillScreen(COLOR_BLACK);
-            // matrix.swapBuffers();
+            if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
+                // start decoding, skipping to the next GIF if there's an error
+                if(decoder.startDecoding() < 0) {
+                    playNextGif = true;
+                    return;
+                }
 
-            // start decoding, skipping to the next GIF if there's an error
-            if(decoder.startDecoding() < 0) {
-                nextGIF = 1;
-                return;
+                // Calculate time in the future to terminate animation
+                displayStartTime_millis = now;
             }
 
-            // Calculate time in the future to terminate animation
-            displayStartTime_millis = now;
+            // get the index for the next pass through
+            if (++index >= num_files) {
+                index = 0;
+            }
         }
 
-        // get the index for the next pass through
-        if (++index >= num_files) {
-            index = 0;
+        // decode frame without delaying after decode
+        int result = decoder.decodeFrame(false);
+
+        lastFrameDisplayTime = now;
+        currentFrameDelay = decoder.getFrameDelay_ms();
+
+        // it's time to start decoding a new GIF if there was an error, and don't wait to decode
+        if(result < 0) {
+            playNextGif = true;
+            currentFrameDelay = 0;
         }
-
-    }
-
-    if(decoder.decodeFrame() < 0) {
-        // There's an error with this GIF, go to the next one
-        nextGIF = 1;
     }
 }

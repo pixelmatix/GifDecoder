@@ -246,68 +246,80 @@ void setup() {
 
 
 void loop() {
+    // these variables keep track of when it's time to play a new GIF
     static unsigned long displayStartTime_millis;
-    static unsigned long cycleStartTime_millis;
-    static int nextGIF = 1;     // we haven't loaded a GIF yet on first pass through, make sure we do that
+    static bool playNextGif = true;     // we haven't loaded a GIF yet on first pass through, make sure we do that
 
-    unsigned long now = millis();
+    // these variables keep track of when we're done displaying the last frame and are ready for a new frame
+    static uint32_t lastFrameDisplayTime = 0;
+    static unsigned int currentFrameDelay = 0;
+
+    // this is used for the profiling code unique to this sketch
+    static unsigned long cycleStartTime_millis;
 
     static int index = 0;
+
+    unsigned long now = millis();
 
 #if 1
     // default behavior is to play the gif for DISPLAY_TIME_SECONDS or for NUMBER_FULL_CYCLES, whichever comes first
     if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) || decoder.getCycleNumber() > NUMBER_FULL_CYCLES)
-        nextGIF = 1;
+        playNextGif = 1;
 #else
     // alt behavior is to play the gif until both DISPLAY_TIME_SECONDS and NUMBER_FULL_CYCLES have passed
     if((now - displayStartTime_millis) > (DISPLAY_TIME_SECONDS * 1000) && decoder.getCycleNumber() > NUMBER_FULL_CYCLES)
-        nextGIF = 1;
+        playNextGif = 1;
 #endif
 
-    if(nextGIF)
-    {
-        cycleStartTime_millis = now;
-        nextGIF = 0;
-        if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
-            // Can clear screen for new animation here, but this might cause flicker with short animations
-            // matrix.fillScreen(COLOR_BLACK);
-            // matrix.swapBuffers();
+    // We only decode a GIF frame if the previous frame delay is over
+    if((millis() - lastFrameDisplayTime) > currentFrameDelay) {
+        // we completed one pass of the GIF, print some stats
+        if(decoder.getCycleNumber() > 0 && decoder.getFrameNumber() == 0) {
+            // Print the stats for this GIF      
+            char buf[80];
+            int32_t frames       = decoder.getFrameCount();
+            int32_t cycle_design = decoder.getCycleTime();  // Intended duration
+            int32_t cycle_actual = now - cycleStartTime_millis;       // Actual duration
+            int32_t percent = 100 * cycle_design / cycle_actual;
+            sprintf(buf, "[%ld frames = %ldms] actual: %ldms speed: %ld%%",
+                    frames, cycle_design, cycle_actual, percent);
+            Serial.println(buf);
 
-            // start decoding, skipping to the next GIF if there's an error
-            if(decoder.startDecoding() < 0) {
-                nextGIF = 1;
-                return;
+            cycleStartTime_millis = now;
+        }
+
+        if(playNextGif)
+        {
+            cycleStartTime_millis = now;
+            playNextGif = false;
+
+            if (openGifFilenameByIndex(GIF_DIRECTORY, index) >= 0) {
+                // start decoding, skipping to the next GIF if there's an error
+                if(decoder.startDecoding() < 0) {
+                    playNextGif = true;
+                    return;
+                }
+
+                // Calculate time in the future to terminate animation
+                displayStartTime_millis = now;
             }
 
-            // Calculate time in the future to terminate animation
-            displayStartTime_millis = now;
+            // get the index for the next pass through
+            if (++index >= num_files) {
+                index = 0;
+            }
         }
 
-        // get the index for the next pass through
-        if (++index >= num_files) {
-            index = 0;
+        // decode frame without delaying after decode
+        int result = decoder.decodeFrame(false);
+
+        lastFrameDisplayTime = now;
+        currentFrameDelay = decoder.getFrameDelay_ms();
+
+        // it's time to start decoding a new GIF if there was an error, and don't wait to decode
+        if(result < 0) {
+            playNextGif = true;
+            currentFrameDelay = 0;
         }
-    }
-
-    int returnCode = decoder.decodeFrame();
-
-    if(returnCode < 0) {
-        // There's an error with this GIF, go to the next one
-        nextGIF = 1;
-    }
-
-    // we completed one pass of the GIF, print some stats
-    if(returnCode == ERROR_DONE_PARSING) {
-        // Print the stats for this GIF      
-        char buf[80];
-        int32_t frames       = decoder.getFrameCount();
-        int32_t cycle_design = decoder.getCycleTime();  // Intended duration
-        int32_t cycle_actual = now - cycleStartTime_millis;       // Actual duration
-        int32_t percent = 100 * cycle_design / cycle_actual;
-        sprintf(buf, "[%ld frames = %ldms] actual: %ldms speed: %ld%%",
-                frames, cycle_design, cycle_actual, percent);
-        Serial.println(buf);
-
-        cycleStartTime_millis = now;
     }
 }
