@@ -401,9 +401,6 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::decodeFrame(bo
 
   frameStatus = gif->playFrame(delayAfterDecode, &frameDelay_ms);
 
-  if(updateScreenCallback)
-      (*updateScreenCallback)();
-
   if(frameStatus < 0) {
     Serial.print("playFrame failed: ");
     Serial.println(gif->getLastError());
@@ -411,10 +408,16 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::decodeFrame(bo
     return translateGifErrorCode(gif->getLastError());    
   }
 
-  frameNumber++;
-  // only track cycleTime on first frame
-  if(!cycleNumber)
-    cycleTime += frameDelay_ms;
+  // only run this code if a new frame was processed, otherwise we got error GIF_EMPTY_FRAME
+  if(gif->getLastError() == GIF_SUCCESS) {
+    if(updateScreenCallback)
+        (*updateScreenCallback)();
+
+    frameNumber++;
+    // only track cycleTime on first frame
+    if(!cycleNumber)
+      cycleTime += frameDelay_ms;    
+  }
 
   // if done parsing
   if (frameStatus == 0) {
