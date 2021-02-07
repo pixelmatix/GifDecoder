@@ -269,6 +269,8 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDecoding(void) {
     return ERROR_MISSING_CALLBACK_FUNCTION;
   }
 
+  frameCount = 0;
+  frameNumber = 0;
   cycleNumber = 0;
   cycleTime = 0;
   frameStartTime = micros();
@@ -319,6 +321,8 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDecoding(uint8_t *pD
     return ERROR_MISSING_CALLBACK_FUNCTION;
   }
 
+  frameCount = 0;
+  frameNumber = 0;
   cycleNumber = 0;
   cycleTime = 0;
   frameStartTime = micros();
@@ -416,8 +420,28 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::decodeFrame(bool delayAft
 
       // file is already open, and we don't know the name, send a 0-length string instead
       gif.open("", GIFOpenFile, GIFCloseFile, GIFReadFile, GIFSeekFile, GIFDraw);
+      #if 0
+        // Used for debugging only - getInfo parses an einter GIF, introducing a large delay so it can't be used normally
+        GIFINFO gi;
+        if (gif.getInfo(&gi)) {
+          Serial.printf("frame count: %d\n", gi.iFrameCount);
+          Serial.printf("duration: %d ms\n", gi.iDuration);
+          Serial.printf("max delay: %d ms\n", gi.iMaxDelay);
+          Serial.printf("min delay: %d ms\n", gi.iMinDelay);
+        }
+      #endif
     } else {
       gif.open(gifPData, gifIDataSize, GIFDraw);
+      #if 0
+        // Used for debugging only - getInfo parses an einter GIF, introducing a large delay so it can't be used normally
+        GIFINFO gi;
+        if (gif.getInfo(&gi)) {
+          Serial.printf("frame count: %d\n", gi.iFrameCount);
+          Serial.printf("duration: %d ms\n", gi.iDuration);
+          Serial.printf("max delay: %d ms\n", gi.iMaxDelay);
+          Serial.printf("min delay: %d ms\n", gi.iMinDelay);
+        }
+      #endif
     }
 
     return ERROR_DONE_PARSING;
