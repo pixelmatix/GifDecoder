@@ -33,89 +33,97 @@
 
 #include "GifDecoder.h"
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::screenClearCallback;
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::updateScreenCallback;
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-pixel_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::drawPixelCallback;
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-line_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::drawLineCallback;
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDrawingCallback;
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-file_seek_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::fileSeekCallback;
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-file_position_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::filePositionCallback;
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-file_read_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::fileReadCallback;
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-file_read_block_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::fileReadBlockCallback;
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-file_size_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::fileSizeCallback;
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::screenClearCallback;
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::updateScreenCallback;
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+pixel_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::drawPixelCallback;
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+line_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::drawLineCallback;
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::startDrawingCallback;
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+file_seek_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::fileSeekCallback;
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+file_position_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::filePositionCallback;
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+file_read_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::fileReadCallback;
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+file_read_block_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::fileReadBlockCallback;
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+file_size_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::fileSizeCallback;
 
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setStartDrawingCallback(
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::GifDecoder(void) {
+  if(!useMalloc)
+    gif = (AnimatedGIF*)buffer;
+  else
+    gif = (AnimatedGIF*)malloc(sizeof(AnimatedGIF));
+}
+
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::setStartDrawingCallback(
     callback f) {
   startDrawingCallback = f;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setUpdateScreenCallback(
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::setUpdateScreenCallback(
     callback f) {
   updateScreenCallback = f;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setDrawPixelCallback(
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::setDrawPixelCallback(
     pixel_callback f) {
   drawPixelCallback = f;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setDrawLineCallback(
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::setDrawLineCallback(
     line_callback f) {
   drawLineCallback = f;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setScreenClearCallback(
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::setScreenClearCallback(
     callback f) {
   screenClearCallback = f;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setFileSeekCallback(
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::setFileSeekCallback(
     file_seek_callback f) {
   fileSeekCallback = f;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setFilePositionCallback(
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::setFilePositionCallback(
     file_position_callback f) {
   filePositionCallback = f;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setFileReadCallback(
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::setFileReadCallback(
     file_read_callback f) {
   fileReadCallback = f;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setFileSizeCallback(
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::setFileSizeCallback(
     file_size_callback f) {
   fileSizeCallback = f;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::setFileReadBlockCallback(file_read_block_callback f) {
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::setFileReadBlockCallback(file_read_block_callback f) {
   fileReadBlockCallback = f;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::DrawPixelRow(int startX, int y, int numPixels, rgb_24 * data) {
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::DrawPixelRow(int startX, int y, int numPixels, rgb_24 * data) {
   for(int i=0; i<numPixels; i++)
   {
     if(drawPixelCallback)
@@ -124,8 +132,8 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::DrawPixelRow(int startX,
   }
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::GIFDraw(GIFDRAW *pDraw) {
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::GIFDraw(GIFDRAW *pDraw) {
   int x_offset = 0;
   int y_offset = 0;
 
@@ -209,8 +217,8 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::GIFDraw(GIFDRAW *pDraw) 
   }
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void * GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::GIFOpenFile(const char *fname, int32_t *pSize) {
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void * GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::GIFOpenFile(const char *fname, int32_t *pSize) {
   // need to get file size, not part of current FilenameFunctions API
   if(fileSizeCallback)
     *pSize = fileSizeCallback();
@@ -219,13 +227,13 @@ void * GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::GIFOpenFile(const char
   return (void*)1;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::GIFCloseFile(void *pHandle) {
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::GIFCloseFile(void *pHandle) {
 
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-int32_t GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::GIFReadFile(GIFFILE *pFile, uint8_t *pBuf, int32_t iLen) {
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+int32_t GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::GIFReadFile(GIFFILE *pFile, uint8_t *pBuf, int32_t iLen) {
   int32_t iBytesRead;
   iBytesRead = iLen;
   //File *f = static_cast<File *>(pFile->fHandle);
@@ -244,21 +252,21 @@ int32_t GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::GIFReadFile(GIFFILE *
   return iBytesRead;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-int32_t GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::GIFSeekFile(GIFFILE *pFile, int32_t iPosition) {
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+int32_t GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::GIFSeekFile(GIFFILE *pFile, int32_t iPosition) {
   fileSeekCallback(iPosition);
   pFile->iPos = (int32_t)filePositionCallback();
   return pFile->iPos;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDecoding(void) {
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::startDecoding(void) {
   usingFileCallbacks = true;
   if(!beginCalled) {
     beginCalled = true;
 
     // using RGB888 = rgb24 palette instead of default RGB565
-    gif.begin(BIG_ENDIAN_PIXELS, GIF_PALETTE_RGB888);
+    gif->begin(BIG_ENDIAN_PIXELS, GIF_PALETTE_RGB888);
   }
 
   // check for callbacks working first
@@ -278,12 +286,12 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDecoding(void) {
   screenClearCallback();
 
   // file is already open, and we don't know the name, send a 0-length string instead
-  if (gif.open("", GIFOpenFile, GIFCloseFile, GIFReadFile, GIFSeekFile, GIFDraw))
+  if (gif->open("", GIFOpenFile, GIFCloseFile, GIFReadFile, GIFSeekFile, GIFDraw))
   {
-    Serial.printf("Successfully opened GIF; Canvas size = %d x %d\n", gif.getCanvasWidth(), gif.getCanvasHeight());
+    Serial.printf("Successfully opened GIF; Canvas size = %d x %d\n", gif->getCanvasWidth(), gif->getCanvasHeight());
 #if 0
     GIFINFO gi;
-    if (gif.getInfo(&gi)) {
+    if (gif->getInfo(&gi)) {
       Serial.printf("frame count: %d\n", gi.iFrameCount);
       Serial.printf("duration: %d ms\n", gi.iDuration);
       Serial.printf("max delay: %d ms\n", gi.iMaxDelay);
@@ -293,15 +301,15 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDecoding(void) {
     Serial.flush();
   } else {
     Serial.print("open failed: ");
-    Serial.println(gif.getLastError());
-    return translateGifErrorCode(gif.getLastError());    
+    Serial.println(gif->getLastError());
+    return translateGifErrorCode(gif->getLastError());    
   }
 
   return ERROR_NONE;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDecoding(uint8_t *pData, int iDataSize) {
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::startDecoding(uint8_t *pData, int iDataSize) {
   usingFileCallbacks = false;
 
   // we need these again to open the file next cycle
@@ -312,7 +320,7 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDecoding(uint8_t *pD
     beginCalled = true;
 
     // using RGB888 = rgb24 palette instead of default RGB565
-    gif.begin(BIG_ENDIAN_PIXELS, GIF_PALETTE_RGB888);
+    gif->begin(BIG_ENDIAN_PIXELS, GIF_PALETTE_RGB888);
   }
 
   // check for callbacks working first
@@ -330,12 +338,12 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDecoding(uint8_t *pD
   screenClearCallback();
 
   // file is already open, and we don't know the name, send a 0-length string instead
-  if (gif.open(gifPData, gifIDataSize, GIFDraw))
+  if (gif->open(gifPData, gifIDataSize, GIFDraw))
   {
-    Serial.printf("Successfully opened GIF; Canvas size = %d x %d\n", gif.getCanvasWidth(), gif.getCanvasHeight());
+    Serial.printf("Successfully opened GIF; Canvas size = %d x %d\n", gif->getCanvasWidth(), gif->getCanvasHeight());
 #if 0
     GIFINFO gi;
-    if (gif.getInfo(&gi)) {
+    if (gif->getInfo(&gi)) {
       Serial.printf("frame count: %d\n", gi.iFrameCount);
       Serial.printf("duration: %d ms\n", gi.iDuration);
       Serial.printf("max delay: %d ms\n", gi.iMaxDelay);
@@ -345,16 +353,16 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::startDecoding(uint8_t *pD
     Serial.flush();
   } else {
     Serial.print("open failed: ");
-    Serial.println(gif.getLastError());
-    return translateGifErrorCode(gif.getLastError());    
+    Serial.println(gif->getLastError());
+    return translateGifErrorCode(gif->getLastError());    
   }
 
   return ERROR_NONE;
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::translateGifErrorCode(int code) {
-  switch (gif.getLastError()) {
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::translateGifErrorCode(int code) {
+  switch (gif->getLastError()) {
     case GIF_SUCCESS:
       return ERROR_NONE;
     case  GIF_DECODE_ERROR:
@@ -378,8 +386,8 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::translateGifErrorCode(int
   }
 }
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits>
-int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::decodeFrame(bool delayAfterDecode) {
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::decodeFrame(bool delayAfterDecode) {
   // Parse gif data
   int frameStatus;
 
@@ -391,16 +399,16 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::decodeFrame(bool delayAft
     return ERROR_MISSING_CALLBACK_FUNCTION;
   }
 
-  frameStatus = gif.playFrame(delayAfterDecode, &frameDelay_ms);
+  frameStatus = gif->playFrame(delayAfterDecode, &frameDelay_ms);
 
   if(updateScreenCallback)
       (*updateScreenCallback)();
 
   if(frameStatus < 0) {
     Serial.print("playFrame failed: ");
-    Serial.println(gif.getLastError());
+    Serial.println(gif->getLastError());
 
-    return translateGifErrorCode(gif.getLastError());    
+    return translateGifErrorCode(gif->getLastError());    
   }
 
   frameNumber++;
@@ -419,11 +427,11 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::decodeFrame(bool delayAft
       fileSeekCallback(0);
 
       // file is already open, and we don't know the name, send a 0-length string instead
-      gif.open("", GIFOpenFile, GIFCloseFile, GIFReadFile, GIFSeekFile, GIFDraw);
+      gif->open("", GIFOpenFile, GIFCloseFile, GIFReadFile, GIFSeekFile, GIFDraw);
       #if 0
         // Used for debugging only - getInfo parses an einter GIF, introducing a large delay so it can't be used normally
         GIFINFO gi;
-        if (gif.getInfo(&gi)) {
+        if (gif->getInfo(&gi)) {
           Serial.printf("frame count: %d\n", gi.iFrameCount);
           Serial.printf("duration: %d ms\n", gi.iDuration);
           Serial.printf("max delay: %d ms\n", gi.iMaxDelay);
@@ -431,11 +439,11 @@ int GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits>::decodeFrame(bool delayAft
         }
       #endif
     } else {
-      gif.open(gifPData, gifIDataSize, GIFDraw);
+      gif->open(gifPData, gifIDataSize, GIFDraw);
       #if 0
         // Used for debugging only - getInfo parses an einter GIF, introducing a large delay so it can't be used normally
         GIFINFO gi;
-        if (gif.getInfo(&gi)) {
+        if (gif->getInfo(&gi)) {
           Serial.printf("frame count: %d\n", gi.iFrameCount);
           Serial.printf("duration: %d ms\n", gi.iDuration);
           Serial.printf("max delay: %d ms\n", gi.iMaxDelay);

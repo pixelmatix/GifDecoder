@@ -42,8 +42,9 @@ typedef struct rgb_24 {
   uint8_t blue;
 } rgb_24;
 
-template <int maxGifWidth, int maxGifHeight, int lzwMaxBits> class GifDecoder {
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc=false> class GifDecoder {
 public:
+  GifDecoder(void);
   int startDecoding(void);
   int startDecoding(uint8_t *pData, int iDataSize);
   int decodeFrame(bool delayAfterDecode = true);
@@ -53,8 +54,8 @@ public:
   int getFrameCount(void) { return frameCount; }    // only valid when cycleNumber > 0, number of frames in one cycle of GIF
   unsigned int getFrameDelay_ms(void) { return frameDelay_ms; } // delay of the last frame decoded
   void getSize(uint16_t *w, uint16_t *h) {
-    *w = gif.getCanvasWidth();
-    *h = gif.getCanvasHeight();
+    *w = gif->getCanvasWidth();
+    *h = gif->getCanvasHeight();
   }
 
   void setScreenClearCallback(callback f);
@@ -70,7 +71,8 @@ public:
   void setFileSizeCallback(file_size_callback f);
 
 private:
-  AnimatedGIF gif;
+  AnimatedGIF * gif;
+  uint8_t buffer[useMalloc ? 0 : sizeof(AnimatedGIF)];
 
   bool beginCalled;
   bool usingFileCallbacks = true;
