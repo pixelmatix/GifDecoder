@@ -1,0 +1,21 @@
+## This file was automatically generated using https://github.com/r89m/arduino-keywords
+rgb_24	KEYWORD1
+GifDecoder	KEYWORD1
+decodeFrame	KEYWORD2
+getCycleNumber	KEYWORD2
+getCycleTime	KEYWORD2
+getFrameCount	KEYWORD2
+getFrameDelay_ms	KEYWORD2
+getFrameNumber	KEYWORD2
+getSize	KEYWORD2
+setDrawLineCallback	KEYWORD2
+setDrawPixelCallback	KEYWORD2
+setFilePositionCallback	KEYWORD2
+setFileReadBlockCallback	KEYWORD2
+setFileReadCallback	KEYWORD2
+setFileSeekCallback	KEYWORD2
+setFileSizeCallback	KEYWORD2
+setScreenClearCallback	KEYWORD2
+setStartDrawingCallback	KEYWORD2
+setUpdateScreenCallback	KEYWORD2
+startDecoding	KEYWORD2

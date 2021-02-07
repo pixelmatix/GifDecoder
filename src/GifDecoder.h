@@ -47,10 +47,10 @@ public:
   int startDecoding(void);
   int startDecoding(uint8_t *pData, int iDataSize);
   int decodeFrame(bool delayAfterDecode = true);
-  int getCycleTime(void) { return cycleTime; }  // only valid when cycleNumber > 0, ideal number of ms to play one cycle of GIF
-  int getFrameNumber(void) { return frameNumber; } // only valid when cycleNumber > 0, number of frames in one cycle of GIF
-  int getCycleNumber(void) { return cycleNumber; } // number indicates number of cycles the GIF has gone through, 0 on first pass,
-  int getFrameCount(void) { return frameCount; } // count of the current frame decoded, resets on each cycle
+  int getCycleTime(void) { return cycleTime; }      // only valid when cycleNumber > 0, ideal number of ms to play one cycle of GIF
+  int getFrameNumber(void) { return frameNumber; }  // count of the current frame decoded, resets on each cycle
+  int getCycleNumber(void) { return cycleNumber; }  // number indicates number of cycles the GIF has gone through, 0 on first pass,
+  int getFrameCount(void) { return frameCount; }    // only valid when cycleNumber > 0, number of frames in one cycle of GIF
   unsigned int getFrameDelay_ms(void) { return frameDelay_ms; } // delay of the last frame decoded
   void getSize(uint16_t *w, uint16_t *h) {
     *w = gif.getCanvasWidth();
