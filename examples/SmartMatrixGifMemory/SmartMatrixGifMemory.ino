@@ -89,9 +89,9 @@
 #include "homer_tiny.h"
 #include "badgers.h"
 
-// add pattern name and sizeof(pattern) to the below lists
-const uint8_t * patternsList[] = { ucBadgers, homer_tiny };
-const uint16_t patternsSizeList[] = { sizeof(ucBadgers), sizeof(homer_tiny) };
+// add gif name and sizeof(gif) to the below lists
+const uint8_t * gifsList[] = { ucBadgers, homer_tiny };
+const uint16_t gifsSizeList[] = { sizeof(ucBadgers), sizeof(homer_tiny) };
 
 #define DISPLAY_TIME_SECONDS 10
 #define NUMBER_FULL_CYCLES   100
@@ -129,8 +129,6 @@ SMARTMATRIX_ALLOCATE_SCROLLING_LAYER(scrollingLayer, kMatrixWidth, kMatrixHeight
  * lzwMaxBits is included for backwards compatibility reasons, but isn't used anymore
  */
 GifDecoder<kMatrixWidth, kMatrixHeight, 12> decoder;
-
-int num_files;
 
 void screenClearCallback(void) {
 #if (USE_SMARTMATRIX == 1)
@@ -226,7 +224,7 @@ void loop() {
             playNextGif = false;
 
             // start decoding, skipping to the next GIF if there's an error
-            if(decoder.startDecoding((uint8_t *)patternsList[index], patternsSizeList[index]) < 0) {
+            if(decoder.startDecoding((uint8_t *)gifsList[index], gifsSizeList[index]) < 0) {
                 playNextGif = true;
                 return;
             }
@@ -235,7 +233,7 @@ void loop() {
             displayStartTime_millis = now;
 
             // get the index for the next pass through
-            index = (index+1) % (sizeof(patternsList)/sizeof(patternsList[0]));
+            index = (index+1) % (sizeof(gifsList)/sizeof(gifsList[0]));
         }
 
         // decode frame without delaying after decode
