@@ -91,7 +91,7 @@
 
 // add gif name and sizeof(gif) to the below lists
 const uint8_t * gifsList[] = { ucBadgers, homer_tiny };
-const uint16_t gifsSizeList[] = { sizeof(ucBadgers), sizeof(homer_tiny) };
+const int gifsSizeList[] = { sizeof(ucBadgers), sizeof(homer_tiny) };
 
 #define DISPLAY_TIME_SECONDS 10
 #define NUMBER_FULL_CYCLES   100
