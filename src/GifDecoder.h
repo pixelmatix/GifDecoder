@@ -23,6 +23,13 @@
 #define ERROR_GIF_DECODE_ERROR          -10
 #define ERROR_MISSING_CALLBACK_FUNCTION -11
 
+
+typedef struct rgb_24 {
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+} rgb_24;
+
 typedef void (*callback)(void);
 typedef void (*pixel_callback)(int16_t x, int16_t y, uint8_t red, uint8_t green,
                                uint8_t blue);
@@ -30,17 +37,14 @@ typedef void (*line_callback)(int16_t x, int16_t y, uint8_t *buf, int16_t wid,
                               uint16_t *palette565, int16_t skip);
 typedef void *(*get_buffer_callback)(void);
 
+typedef void (*palette_callback)(rgb_24 *palette888, bool isGlobalPalette);
+
 typedef bool (*file_seek_callback)(unsigned long position);
 typedef unsigned long (*file_position_callback)(void);
 typedef int (*file_read_callback)(void);
 typedef int (*file_read_block_callback)(void *buffer, int numberOfBytes);
 typedef int (*file_size_callback)(void);
 
-typedef struct rgb_24 {
-  uint8_t red;
-  uint8_t green;
-  uint8_t blue;
-} rgb_24;
 
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc=false> class GifDecoder {
 public:
@@ -63,6 +67,8 @@ public:
   void setDrawPixelCallback(pixel_callback f);
   void setDrawLineCallback(line_callback f); // note this callback is not currently used, but may be used in the future
   void setStartDrawingCallback(callback f); // note this callback is not currently used
+
+  void setPaletteCallback(palette_callback);
 
   void setFileSeekCallback(file_seek_callback f);
   void setFilePositionCallback(file_position_callback f);
@@ -98,6 +104,7 @@ private:
   static file_read_callback fileReadCallback;
   static file_read_block_callback fileReadBlockCallback;
   static file_size_callback fileSizeCallback;
+  static palette_callback paletteCallback;
 
   static void GIFDraw(GIFDRAW *pDraw);
   static void * GIFOpenFile(const char *fname, int32_t *pSize);
