@@ -156,7 +156,7 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::GIFDraw(GIFDR
   usPalette = (rgb_24*)pDraw->pPalette;
 
     if(paletteCallback)
-        paletteCallback(usPalette,pDraw->bIsGlobalPalette);
+        paletteCallback(usPalette,pDraw->ucIsGlobalPalette==1);
 
   y = pDraw->iY + pDraw->y; // current line
   
