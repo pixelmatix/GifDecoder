@@ -53,6 +53,8 @@ template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
 file_read_block_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::fileReadBlockCallback;
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
 file_size_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::fileSizeCallback;
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+palette_callback GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::paletteCallback;
 
 
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
@@ -123,6 +125,12 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::setFileReadBl
 }
 
 template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
+void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::setPaletteCallback(palette_callback f) {
+  paletteCallback = f;
+}
+
+
+template <int maxGifWidth, int maxGifHeight, int lzwMaxBits, bool useMalloc>
 void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::DrawPixelRow(int startX, int y, int numPixels, rgb_24 * data) {
   for(int i=0; i<numPixels; i++)
   {
@@ -146,6 +154,9 @@ void GifDecoder<maxGifWidth, maxGifHeight, lzwMaxBits, useMalloc>::GIFDraw(GIFDR
   if (iWidth > DISPLAY_WIDTH)
     iWidth = DISPLAY_WIDTH;
   usPalette = (rgb_24*)pDraw->pPalette;
+
+    if(paletteCallback)
+        paletteCallback(usPalette,pDraw->ucIsGlobalPalette==1);
 
   y = pDraw->iY + pDraw->y; // current line
   
