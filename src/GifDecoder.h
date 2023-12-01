@@ -74,7 +74,7 @@ private:
   AnimatedGIF * gif;
   uint8_t buffer[useMalloc ? 0 : sizeof(AnimatedGIF)];
 
-  bool beginCalled;
+  bool beginCalled = false;
   bool usingFileCallbacks = true;
 
   uint8_t *gifPData;
